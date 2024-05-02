@@ -1,5 +1,7 @@
 # Bevy Async X
 
+> Experimental, not ready yet, needs evaluation with more tests and examples
+
 ## Example
 
 ```rust
