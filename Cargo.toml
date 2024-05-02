@@ -1,0 +1,16 @@
+[package]
+name = "bevy_async_x"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+macros = { path = "./macros" }
+bevy_ecs = "0.13"
+bevy_core = "0.13"
+bevy_time = "0.13"
+bevy_input = "0.13"
+bevy_asset = "0.13"
+futures-lite = "2"
+
+[dev-dependencies]
+bevy = "0.13"
