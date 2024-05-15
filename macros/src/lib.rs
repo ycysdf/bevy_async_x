@@ -32,7 +32,7 @@ pub fn async_system(_attr: TokenStream, item: TokenStream) -> TokenStream {
             #(#[#metas])*
             #vis #signature {
                 let params = (#params);
-                bevy_async_x::tick_future(params,future_state, |__p| async {
+                bevy_async_x::tick_future(params,&mut *future_state, |__p| async {
                     let (#params) = __p;
                     #block
                 })

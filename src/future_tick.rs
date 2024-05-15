@@ -4,15 +4,16 @@ use std::pin::Pin;
 use std::ptr;
 use std::task::{Context, Poll, RawWaker, RawWakerVTable, Waker};
 
-use bevy_ecs::prelude::Local;
+use bevy_ecs::prelude::{Component, Local};
+use bevy_utils::synccell::SyncCell;
 
-#[derive(Default)]
+#[derive(Default, Component)]
 pub enum FutureState {
     #[default]
     NoStart,
     Started {
-        inner: FutureInnerData,
-        future: Pin<Box<dyn Future<Output = ()> + Send + 'static>>,
+        inner: SyncCell<FutureInnerData>,
+        future: SyncCell<Pin<Box<dyn Future<Output = ()> + Send + 'static>>>,
     },
     Completed,
 }
@@ -46,22 +47,22 @@ const NOOP: RawWaker = {
     RawWaker::new(ptr::null(), &VTABLE)
 };
 
-pub fn tick_future<'a,T, Fur>(
+pub fn tick_future<'a, T, Fur>(
     params: T,
-    mut future_state: Local<FutureState>,
+    mut future_state: &mut FutureState,
     future_factory: impl FnOnce(&'a mut T) -> Fur + Send,
 ) where
-    T: Send +'a,
+    T: Send + 'a,
     Fur: Future<Output = ()> + Send,
 {
     let weaker: Waker = unsafe { Waker::from_raw(NOOP) };
-    let next_state = match future_state.deref_mut() {
+    let next_state = match future_state {
         FutureState::NoStart => {
             let mut inner_ptr = FutureInnerData(None);
             let future = Box::pin({
                 let inner_ptr = &mut inner_ptr;
                 async move {
-                    let mut inner_data = vec![0u8;core::mem::size_of::<T>()];
+                    let mut inner_data = vec![0u8; core::mem::size_of::<T>()];
                     inner_ptr.0 = Some(inner_data.as_mut_ptr());
                     let data = unsafe { &mut *(inner_data.as_mut_ptr() as *mut T) };
                     *data = params;
@@ -75,16 +76,17 @@ pub fn tick_future<'a,T, Fur>(
             match Pin::new(&mut future).poll(&mut ctx) {
                 Poll::Ready(_) => Some(FutureState::Completed),
                 Poll::Pending => Some(FutureState::Started {
-                    inner: inner_ptr,
-                    future,
+                    inner: SyncCell::new(inner_ptr),
+                    future: SyncCell::new(future),
                 }),
             }
         }
         FutureState::Started {
             ref mut future,
             inner: inner_ptr,
-        } => inner_ptr.scoped(params, || {
+        } => inner_ptr.get().scoped(params, || {
             let mut ctx = Context::from_waker(&weaker);
+            let future = future.get();
             match Pin::new(future).poll(&mut ctx) {
                 Poll::Ready(_) => Some(FutureState::Completed),
                 Poll::Pending => None,

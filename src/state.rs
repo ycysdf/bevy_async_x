@@ -1,6 +1,6 @@
 use std::future::Future;
+use bevy_state::prelude::{State, States};
 
-use bevy_ecs::schedule::{State, States};
 use bevy_ecs::system::Res;
 
 use crate::AsyncXResExt;

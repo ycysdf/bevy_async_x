@@ -5,12 +5,17 @@ edition = "2021"
 
 [dependencies]
 macros = { path = "./macros" }
-bevy_ecs = "0.13"
-bevy_core = "0.13"
-bevy_time = "0.13"
-bevy_input = "0.13"
-bevy_asset = "0.13"
+bevy_ecs = { git = "https://github.com/bevyengine/bevy.git", branch = "main" }
+bevy_core = { git = "https://github.com/bevyengine/bevy.git", branch = "main" }
+bevy_time = { git = "https://github.com/bevyengine/bevy.git", branch = "main" }
+bevy_input = { git = "https://github.com/bevyengine/bevy.git", branch = "main" }
+bevy_asset = { git = "https://github.com/bevyengine/bevy.git", branch = "main" }
+bevy_state = { git = "https://github.com/bevyengine/bevy.git", branch = "main" }
+bevy_tasks = { git = "https://github.com/bevyengine/bevy.git", branch = "main", features = ["multi_threaded"] }
+bevy_utils = { git = "https://github.com/bevyengine/bevy.git", branch = "main", default-features = false }
 futures-lite = "2"
 
 [dev-dependencies]
-bevy = "0.13"
+bevy = { git = "https://github.com/bevyengine/bevy.git", branch = "main" }
+rxy_ui = { path = "../rxy_ui", features = ["bevy"] }
+oneshot = "0.1"

@@ -7,7 +7,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_systems(Main, (test, test2))
         .init_state::<TestState>()
-        .run()
+        .run();
 }
 
 #[async_system]
